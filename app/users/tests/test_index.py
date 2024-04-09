@@ -8,7 +8,7 @@ from shared.tests.utils.generate_user import generate_sample_user, generate_samp
 USERS_INDEX_URL = reverse("users:index")
 
 
-class UsersPublicRoutesApiTests(TestCase):
+class CreateUserApiTests(TestCase):
     def setUp(self):  # pylint: disable=invalid-name
         self.client = APIClient()
 
