@@ -5,6 +5,8 @@ from django.urls import reverse
 
 class UserModelAdminTests(TestCase):
     def setUp(self):
+        super().setUp()
+
         self.client = Client()
         self.admin_user = get_user_model().objects.create_superuser(
             email="admin@example.com",

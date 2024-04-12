@@ -1,1 +1,2 @@
-from .user import UserAdmin  # noqa
+from .recipe import *  # noqa
+from .user import *  # noqa

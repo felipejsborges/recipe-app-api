@@ -1,17 +1,13 @@
 from django.contrib.auth import get_user_model
-from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
-from rest_framework.test import APIClient
+from rest_framework.test import APITestCase
 from shared.tests.utils.generate_user import generate_sample_user, generate_sample_user_payload
 
 USERS_INDEX_URL = reverse("users:index")
 
 
-class CreateUserApiTests(TestCase):
-    def setUp(self):  # pylint: disable=invalid-name
-        self.client = APIClient()
-
+class CreateUserApiTests(APITestCase):
     def test_create_user(self):
         payload = generate_sample_user_payload()
         res = self.client.post(USERS_INDEX_URL, payload)

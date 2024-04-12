@@ -1,15 +1,14 @@
-from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
-from rest_framework.test import APIClient
+from rest_framework.test import APITestCase
 from shared.tests.utils.generate_user import generate_sample_user, generate_sample_user_payload
 
 USERS_TOKENS_URL = reverse("users:tokens")
 
 
-class CreateTokenApiTests(TestCase):
+class CreateTokenApiTests(APITestCase):
     def setUp(self):  # pylint: disable=invalid-name
-        self.client = APIClient()
+        super().setUp()
 
         self.user_payload = generate_sample_user_payload()
 

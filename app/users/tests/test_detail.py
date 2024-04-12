@@ -8,6 +8,8 @@ USERS_DETAIL_URL = reverse("users:details")
 
 class UserDetailNotAuthenticatedApiTests(APITestCase):
     def setUp(self):  # pylint: disable=invalid-name
+        super().setUp()
+
         self.client.force_authenticate(user=None)
 
     def test_not_get_unauthenticated(self):
