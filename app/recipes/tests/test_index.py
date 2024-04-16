@@ -1,6 +1,6 @@
 from random import randint
 
-from core.models import Recipe
+from core.models import Recipe, Tag
 from django.urls import reverse
 from recipes.serializers import RecipesSerializer
 from rest_framework import status
@@ -57,6 +57,67 @@ class CreateRecipeApiTests(UserAuthenticatedMixinForTests, APITestCase):
         self.assertEqual(recipe.user, self.user)
         for k, v in payload.items():
             self.assertEqual(getattr(recipe, k), v)
+
+    def test_create_recipe_with_new_tags(self):
+        payload = generate_sample_recipe_payload(with_nested_fields=True)
+
+        res = self.client.post(RECIPES_INDEX_URL, payload, format="json")
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
+        recipe = Recipe.objects.filter(user=self.user)[0]
+        self.assertEqual(recipe.tags.count(), len(payload["tags"]))
+
+        for tag in payload["tags"]:
+            exists_tag_with_same_name_of_payload = recipe.tags.filter(
+                name=tag["name"],
+                user=self.user,
+            ).exists()
+
+            self.assertTrue(exists_tag_with_same_name_of_payload)
+
+    def test_create_recipe_with_existing_tags(self):
+        payload = generate_sample_recipe_payload()
+
+        existing_tag = Tag.objects.create(user=self.user, name="Existing Tag")
+        payload["tags"] = [{"name": existing_tag.name}]
+
+        res = self.client.post(RECIPES_INDEX_URL, payload, format="json")
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
+        recipe = Recipe.objects.filter(user=self.user)[0]
+        self.assertEqual(recipe.tags.count(), len(payload["tags"]))
+
+        self.assertIn(existing_tag, recipe.tags.all())
+
+        for tag in payload["tags"]:
+            exists_tag_with_same_name_of_payload = recipe.tags.filter(
+                name=tag["name"],
+                user=self.user,
+            ).exists()
+
+            self.assertTrue(exists_tag_with_same_name_of_payload)
+
+    def test_create_recipe_with_either_existing_and_new_tags(self):
+        payload = generate_sample_recipe_payload()
+
+        existing_tag = Tag.objects.create(user=self.user, name="Existing Tag")
+        payload["tags"] = [{"name": existing_tag.name}, {"name": "New Tag"}]
+
+        res = self.client.post(RECIPES_INDEX_URL, payload, format="json")
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
+        recipe = Recipe.objects.filter(user=self.user)[0]
+        self.assertEqual(recipe.tags.count(), len(payload["tags"]))
+
+        self.assertIn(existing_tag, recipe.tags.all())
+
+        for tag in payload["tags"]:
+            exists_tag_with_same_name_of_payload = recipe.tags.filter(
+                name=tag["name"],
+                user=self.user,
+            ).exists()
+
+            self.assertTrue(exists_tag_with_same_name_of_payload)
 
 
 class ListRecipesApiTests(UserAuthenticatedMixinForTests, APITestCase):

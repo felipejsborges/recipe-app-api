@@ -29,4 +29,5 @@ urlpatterns = [
     ),
     path("api/users/", include("users.urls")),
     path("api/recipes/", include("recipes.urls")),
+    path("api/tags/", include("tags.urls")),
 ]

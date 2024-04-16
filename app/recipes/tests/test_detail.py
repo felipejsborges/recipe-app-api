@@ -112,6 +112,61 @@ class UpdateRecipeApiTests(UserAuthenticatedMixinForTests, APITestCase):
 
         self.assertEqual(recipe.user, self.user)
 
+    def test_update_recipe_adding_tags(self):
+        recipe = generate_sample_recipe(user=self.user)
+
+        payload = {"tags": [{"name": "New Tag"}]}
+
+        url = generate_url_to_recipe_detail(recipe.id)
+        res = self.client.patch(url, payload, format="json")
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+        recipe.refresh_from_db()
+
+        self.assertEqual(recipe.tags.count(), len(payload["tags"]))
+
+        for tag in payload["tags"]:
+            exists_tag_with_same_name_of_payload = recipe.tags.filter(
+                name=tag["name"],
+                user=self.user,
+            ).exists()
+
+            self.assertTrue(exists_tag_with_same_name_of_payload)
+
+    def test_update_recipe_changing_tags(self):
+        recipe = generate_sample_recipe(user=self.user, with_nested_fields=True)
+
+        payload = {"tags": [{"name": "New Tag"}]}
+
+        url = generate_url_to_recipe_detail(recipe.id)
+        res = self.client.patch(url, payload, format="json")
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+        recipe.refresh_from_db()
+
+        self.assertEqual(recipe.tags.count(), len(payload["tags"]))
+
+        for tag in payload["tags"]:
+            exists_tag_with_same_name_of_payload = recipe.tags.filter(
+                name=tag["name"],
+                user=self.user,
+            ).exists()
+
+            self.assertTrue(exists_tag_with_same_name_of_payload)
+
+    def test_update_recipe_removing_tags(self):
+        recipe = generate_sample_recipe(user=self.user, with_nested_fields=True)
+
+        payload = {"tags": []}
+
+        url = generate_url_to_recipe_detail(recipe.id)
+        res = self.client.patch(url, payload, format="json")
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+        recipe.refresh_from_db()
+
+        self.assertEqual(recipe.tags.count(), 0)
+
 
 class DeleteRecipeApiTests(UserAuthenticatedMixinForTests, APITestCase):
     def test_delete_recipe_happy_path(self):
