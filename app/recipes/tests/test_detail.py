@@ -112,6 +112,8 @@ class UpdateRecipeApiTests(UserAuthenticatedMixinForTests, APITestCase):
 
         self.assertEqual(recipe.user, self.user)
 
+
+class UpdateRecipeWithTagsApiTests(UserAuthenticatedMixinForTests, APITestCase):
     def test_update_recipe_adding_tags(self):
         recipe = generate_sample_recipe(user=self.user)
 
@@ -166,6 +168,63 @@ class UpdateRecipeApiTests(UserAuthenticatedMixinForTests, APITestCase):
         recipe.refresh_from_db()
 
         self.assertEqual(recipe.tags.count(), 0)
+
+
+class UpdateRecipeWithIngredientsApiTests(UserAuthenticatedMixinForTests, APITestCase):
+    def test_update_recipe_adding_ingredients(self):
+        recipe = generate_sample_recipe(user=self.user)
+
+        payload = {"ingredients": [{"name": "New Ingredient"}]}
+
+        url = generate_url_to_recipe_detail(recipe.id)
+        res = self.client.patch(url, payload, format="json")
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+        recipe.refresh_from_db()
+
+        self.assertEqual(recipe.ingredients.count(), len(payload["ingredients"]))
+
+        for ingredient in payload["ingredients"]:
+            exists_ingredient_with_same_name_of_payload = recipe.ingredients.filter(
+                name=ingredient["name"],
+                user=self.user,
+            ).exists()
+
+            self.assertTrue(exists_ingredient_with_same_name_of_payload)
+
+    def test_update_recipe_changing_ingredients(self):
+        recipe = generate_sample_recipe(user=self.user, with_nested_fields=True)
+
+        payload = {"ingredients": [{"name": "New Ingredient"}]}
+
+        url = generate_url_to_recipe_detail(recipe.id)
+        res = self.client.patch(url, payload, format="json")
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+        recipe.refresh_from_db()
+
+        self.assertEqual(recipe.ingredients.count(), len(payload["ingredients"]))
+
+        for ingredient in payload["ingredients"]:
+            exists_ingredient_with_same_name_of_payload = recipe.ingredients.filter(
+                name=ingredient["name"],
+                user=self.user,
+            ).exists()
+
+            self.assertTrue(exists_ingredient_with_same_name_of_payload)
+
+    def test_update_recipe_removing_ingredients(self):
+        recipe = generate_sample_recipe(user=self.user, with_nested_fields=True)
+
+        payload = {"ingredients": []}
+
+        url = generate_url_to_recipe_detail(recipe.id)
+        res = self.client.patch(url, payload, format="json")
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+        recipe.refresh_from_db()
+
+        self.assertEqual(recipe.ingredients.count(), 0)
 
 
 class DeleteRecipeApiTests(UserAuthenticatedMixinForTests, APITestCase):

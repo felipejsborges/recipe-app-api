@@ -1,6 +1,6 @@
 from random import randint
 
-from core.models import Recipe, Tag
+from core.models import Ingredient, Recipe, Tag
 from django.urls import reverse
 from recipes.serializers import RecipesSerializer
 from rest_framework import status
@@ -58,6 +58,8 @@ class CreateRecipeApiTests(UserAuthenticatedMixinForTests, APITestCase):
         for k, v in payload.items():
             self.assertEqual(getattr(recipe, k), v)
 
+
+class CreateRecipeWithTagsApiTests(UserAuthenticatedMixinForTests, APITestCase):
     def test_create_recipe_with_new_tags(self):
         payload = generate_sample_recipe_payload(with_nested_fields=True)
 
@@ -118,6 +120,69 @@ class CreateRecipeApiTests(UserAuthenticatedMixinForTests, APITestCase):
             ).exists()
 
             self.assertTrue(exists_tag_with_same_name_of_payload)
+
+
+class CreateRecipeWithIngredientsApiTests(UserAuthenticatedMixinForTests, APITestCase):
+    def test_create_recipe_with_new_ingredients(self):
+        payload = generate_sample_recipe_payload(with_nested_fields=True)
+
+        res = self.client.post(RECIPES_INDEX_URL, payload, format="json")
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
+        recipe = Recipe.objects.filter(user=self.user)[0]
+        self.assertEqual(recipe.ingredients.count(), len(payload["ingredients"]))
+
+        for ingredient in payload["ingredients"]:
+            exists_ingredient_with_same_name_of_payload = recipe.ingredients.filter(
+                name=ingredient["name"],
+                user=self.user,
+            ).exists()
+
+            self.assertTrue(exists_ingredient_with_same_name_of_payload)
+
+    def test_create_recipe_with_existing_ingredients(self):
+        payload = generate_sample_recipe_payload()
+
+        existing_ingredient = Ingredient.objects.create(user=self.user, name="Existing Ingredient")
+        payload["ingredients"] = [{"name": existing_ingredient.name}]
+
+        res = self.client.post(RECIPES_INDEX_URL, payload, format="json")
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
+        recipe = Recipe.objects.filter(user=self.user)[0]
+        self.assertEqual(recipe.ingredients.count(), len(payload["ingredients"]))
+
+        self.assertIn(existing_ingredient, recipe.ingredients.all())
+
+        for ingredient in payload["ingredients"]:
+            exists_ingredient_with_same_name_of_payload = recipe.ingredients.filter(
+                name=ingredient["name"],
+                user=self.user,
+            ).exists()
+
+            self.assertTrue(exists_ingredient_with_same_name_of_payload)
+
+    def test_create_recipe_with_either_existing_and_new_ingredients(self):
+        payload = generate_sample_recipe_payload()
+
+        existing_ingredient = Ingredient.objects.create(user=self.user, name="Existing Ingredient")
+        payload["ingredients"] = [{"name": existing_ingredient.name}, {"name": "New Ingredient"}]
+
+        res = self.client.post(RECIPES_INDEX_URL, payload, format="json")
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
+        recipe = Recipe.objects.filter(user=self.user)[0]
+        self.assertEqual(recipe.ingredients.count(), len(payload["ingredients"]))
+
+        self.assertIn(existing_ingredient, recipe.ingredients.all())
+
+        for ingredient in payload["ingredients"]:
+            exists_ingredient_with_same_name_of_payload = recipe.ingredients.filter(
+                name=ingredient["name"],
+                user=self.user,
+            ).exists()
+
+            self.assertTrue(exists_ingredient_with_same_name_of_payload)
 
 
 class ListRecipesApiTests(UserAuthenticatedMixinForTests, APITestCase):

@@ -4,6 +4,7 @@ from typing import Optional
 
 from core.models import Recipe
 from django.conf import settings
+from shared.utils.get_or_create_ingredients_for_recipe import get_or_create_ingredients_for_recipe
 from shared.utils.get_or_create_tags_for_recipe import get_or_create_tags_for_recipe
 
 
@@ -32,6 +33,15 @@ def generate_sample_recipe_payload(user: Optional[settings.AUTH_USER_MODEL] = No
             },
         ]
 
+        defaults["ingredients"] = [
+            {
+                "name": "Sample Ingredient 1",
+            },
+            {
+                "name": "Sample Ingredient 2",
+            },
+        ]
+
     defaults.update(params)
 
     return defaults
@@ -41,9 +51,11 @@ def generate_sample_recipe(user: settings.AUTH_USER_MODEL, **params):
     payload = generate_sample_recipe_payload(user, **params)
 
     tags = payload.pop("tags", [])
+    ingredients = payload.pop("ingredients", [])
 
     recipe = Recipe.objects.create(**payload)
 
     get_or_create_tags_for_recipe(recipe, tags)
+    get_or_create_ingredients_for_recipe(recipe, ingredients)
 
     return recipe
