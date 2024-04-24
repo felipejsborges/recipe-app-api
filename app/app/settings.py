@@ -148,4 +148,5 @@ SPECTACULAR_SETTINGS = {
     'TITLE': 'Recipes API',
     'DESCRIPTION': 'An API to list and create recipes.',
     'VERSION': '1.0.0',
+    'COMPONENT_SPLIT_REQUEST': True,
 }

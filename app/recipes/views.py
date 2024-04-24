@@ -1,8 +1,10 @@
 from core.models import Recipe
-from recipes.serializers import RecipeDetailSerializer, RecipesSerializer
-from rest_framework import viewsets
+from recipes.serializers import RecipeDetailSerializer, RecipeImageSerializer, RecipesSerializer
+from rest_framework import status, viewsets
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 
 class RecipesViewSet(viewsets.ModelViewSet):
@@ -18,7 +20,21 @@ class RecipesViewSet(viewsets.ModelViewSet):
         if self.action == "list":
             return RecipesSerializer
 
+        if self.action == "upload_image":
+            return RecipeImageSerializer
+
         return self.serializer_class
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+    @action(methods=["PATCH"], detail=True, url_path="image")
+    def upload_image(self, *args, **kwargs):  # pylint: disable=unused-argument
+        recipe = self.get_object()
+
+        serializer = self.get_serializer(recipe, data=self.request.data)
+        serializer.is_valid(raise_exception=True)
+
+        serializer.save()
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
