@@ -1,12 +1,15 @@
 from random import randint
 
 from core.models import Ingredient, Recipe, Tag
+from django.forms.models import model_to_dict
 from django.urls import reverse
 from recipes.serializers import RecipesSerializer
 from rest_framework import status
 from rest_framework.test import APITestCase
 from shared.tests.mixins.auth import UserAuthenticatedMixinForTests
+from shared.tests.utils.generate_ingredient import generate_sample_ingredient
 from shared.tests.utils.generate_recipe import generate_sample_recipe, generate_sample_recipe_payload
+from shared.tests.utils.generate_tag import generate_sample_tag
 from shared.tests.utils.generate_user import generate_sample_user
 
 RECIPES_INDEX_URL = reverse("recipes:recipe-list")
@@ -214,3 +217,57 @@ class ListRecipesApiTests(UserAuthenticatedMixinForTests, APITestCase):
         recipes = Recipe.objects.filter(user=self.user).order_by("-id")
         serializer = RecipesSerializer(recipes, many=True)
         self.assertEqual(res.data, serializer.data)
+
+    def test_recipe_list_filtered_by_tags(self):
+        tag_to_be_filtered = generate_sample_tag(user=self.user, name="Vegan")
+        recipe_to_be_filtered = generate_sample_recipe(
+            user=self.user, title="Thai Vegetable Curry", tags=[model_to_dict(tag_to_be_filtered, fields="id")]
+        )
+
+        tag_to_not_be_filtered = generate_sample_tag(user=self.user, name="Vegetarian")
+        recipe_to_not_be_filtered = generate_sample_recipe(
+            user=self.user, title="Aubergine with Tahini", tags=[model_to_dict(tag_to_not_be_filtered, fields="id")]
+        )
+
+        recipe_without_any_tag = generate_sample_recipe(user=self.user, title="Fish and chips")
+
+        params = {"tags": f"{tag_to_be_filtered.id}"}
+        res = self.client.get(RECIPES_INDEX_URL, params)
+
+        serialized_recipe_to_be_filtered = RecipesSerializer(recipe_to_be_filtered).data
+        self.assertIn(serialized_recipe_to_be_filtered, res.data)
+
+        serialized_recipe_to_not_be_filtered = RecipesSerializer(recipe_to_not_be_filtered).data
+        self.assertNotIn(serialized_recipe_to_not_be_filtered, res.data)
+
+        serialized_recipe_without_any_tag = RecipesSerializer(recipe_without_any_tag).data
+        self.assertNotIn(serialized_recipe_without_any_tag, res.data)
+
+    def test_recipe_list_filtered_by_ingredients(self):
+        ingredient_to_be_filtered = generate_sample_ingredient(user=self.user, name="Cheese")
+        recipe_to_be_filtered = generate_sample_recipe(
+            user=self.user,
+            title="Thai Vegetable Curry",
+            ingredients=[model_to_dict(ingredient_to_be_filtered, fields="id")],
+        )
+
+        ingredient_to_not_be_filtered = generate_sample_ingredient(user=self.user, name="Chicken")
+        recipe_to_not_be_filtered = generate_sample_recipe(
+            user=self.user,
+            title="Aubergine with Tahini",
+            ingredients=[model_to_dict(ingredient_to_not_be_filtered, fields="id")],
+        )
+
+        recipe_without_any_ingredient = generate_sample_recipe(user=self.user, title="Fish and chips")
+
+        params = {"ingredients": f"{ingredient_to_be_filtered.id}"}
+        res = self.client.get(RECIPES_INDEX_URL, params)
+
+        serialized_recipe_to_be_filtered = RecipesSerializer(recipe_to_be_filtered).data
+        self.assertIn(serialized_recipe_to_be_filtered, res.data)
+
+        serialized_recipe_to_not_be_filtered = RecipesSerializer(recipe_to_not_be_filtered).data
+        self.assertNotIn(serialized_recipe_to_not_be_filtered, res.data)
+
+        serialized_recipe_without_any_ingredient = RecipesSerializer(recipe_without_any_ingredient).data
+        self.assertNotIn(serialized_recipe_without_any_ingredient, res.data)
