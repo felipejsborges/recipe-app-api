@@ -8,7 +8,7 @@ from rest_framework.test import APITestCase
 from shared.tests.mixins.auth import UserAuthenticatedMixinForTests
 from shared.tests.utils.generate_recipe import generate_sample_recipe
 
-RECIPES_IMAGE_UPLOAD_URL = "recipes:recipe-image"
+RECIPES_IMAGE_UPLOAD_URL = "recipes:recipe-upload-image"
 
 
 def generate_url_to_recipe_image_upload(recipe_id=None):

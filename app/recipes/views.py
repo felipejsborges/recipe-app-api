@@ -28,7 +28,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
-    @action(methods=["PATCH"], detail=True, url_path="image")
+    @action(methods=["PATCH"], detail=True, url_path="upload-image")
     def upload_image(self, *args, **kwargs):  # pylint: disable=unused-argument
         recipe = self.get_object()
 
