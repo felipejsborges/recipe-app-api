@@ -199,7 +199,7 @@ class ListRecipesApiTests(UserAuthenticatedMixinForTests, APITestCase):
 
         existing_recipes = Recipe.objects.all().order_by("-id")
         serializer = RecipesSerializer(existing_recipes, many=True)
-        self.assertEqual(res.data, serializer.data)
+        self.assertEqual(res.data["results"], serializer.data)
 
     def test_recipe_list_limited_to_user(self):
         random_quantity_linked_to_other_user = randint(1, 3)
@@ -216,7 +216,7 @@ class ListRecipesApiTests(UserAuthenticatedMixinForTests, APITestCase):
 
         recipes = Recipe.objects.filter(user=self.user).order_by("-id")
         serializer = RecipesSerializer(recipes, many=True)
-        self.assertEqual(res.data, serializer.data)
+        self.assertEqual(res.data["results"], serializer.data)
 
 
 class ListRecipesFilteredApiTests(UserAuthenticatedMixinForTests, APITestCase):
@@ -237,13 +237,13 @@ class ListRecipesFilteredApiTests(UserAuthenticatedMixinForTests, APITestCase):
         res = self.client.get(RECIPES_INDEX_URL, params)
 
         serialized_recipe_to_be_filtered = RecipesSerializer(recipe_to_be_filtered).data
-        self.assertIn(serialized_recipe_to_be_filtered, res.data)
+        self.assertIn(serialized_recipe_to_be_filtered, res.data["results"])
 
         serialized_recipe_to_not_be_filtered = RecipesSerializer(recipe_to_not_be_filtered).data
-        self.assertNotIn(serialized_recipe_to_not_be_filtered, res.data)
+        self.assertNotIn(serialized_recipe_to_not_be_filtered, res.data["results"])
 
         serialized_recipe_without_any_tag = RecipesSerializer(recipe_without_any_tag).data
-        self.assertNotIn(serialized_recipe_without_any_tag, res.data)
+        self.assertNotIn(serialized_recipe_without_any_tag, res.data["results"])
 
     def test_recipe_list_filtered_by_ingredients(self):
         ingredient_to_be_filtered = generate_sample_ingredient(user=self.user, name="Cheese")
@@ -266,13 +266,13 @@ class ListRecipesFilteredApiTests(UserAuthenticatedMixinForTests, APITestCase):
         res = self.client.get(RECIPES_INDEX_URL, params)
 
         serialized_recipe_to_be_filtered = RecipesSerializer(recipe_to_be_filtered).data
-        self.assertIn(serialized_recipe_to_be_filtered, res.data)
+        self.assertIn(serialized_recipe_to_be_filtered, res.data["results"])
 
         serialized_recipe_to_not_be_filtered = RecipesSerializer(recipe_to_not_be_filtered).data
-        self.assertNotIn(serialized_recipe_to_not_be_filtered, res.data)
+        self.assertNotIn(serialized_recipe_to_not_be_filtered, res.data["results"])
 
         serialized_recipe_without_any_ingredient = RecipesSerializer(recipe_without_any_ingredient).data
-        self.assertNotIn(serialized_recipe_without_any_ingredient, res.data)
+        self.assertNotIn(serialized_recipe_without_any_ingredient, res.data["results"])
 
     def test_recipe_list_filtered_by_title(self):
         recipe_to_be_filtered = generate_sample_recipe(user=self.user, title="Thai Vegetable Curry")
@@ -282,10 +282,10 @@ class ListRecipesFilteredApiTests(UserAuthenticatedMixinForTests, APITestCase):
         res = self.client.get(RECIPES_INDEX_URL, params)
 
         serialized_recipe_to_be_filtered = RecipesSerializer(recipe_to_be_filtered).data
-        self.assertIn(serialized_recipe_to_be_filtered, res.data)
+        self.assertIn(serialized_recipe_to_be_filtered, res.data["results"])
 
         serialized_recipe_to_not_be_filtered = RecipesSerializer(recipe_to_not_be_filtered).data
-        self.assertNotIn(serialized_recipe_to_not_be_filtered, res.data)
+        self.assertNotIn(serialized_recipe_to_not_be_filtered, res.data["results"])
 
     def test_recipe_list_filtered_by_price(self):
         recipe_to_be_filtered = generate_sample_recipe(user=self.user, price=10)
@@ -295,10 +295,10 @@ class ListRecipesFilteredApiTests(UserAuthenticatedMixinForTests, APITestCase):
         res = self.client.get(RECIPES_INDEX_URL, params)
 
         serialized_recipe_to_be_filtered = RecipesSerializer(recipe_to_be_filtered).data
-        self.assertIn(serialized_recipe_to_be_filtered, res.data)
+        self.assertIn(serialized_recipe_to_be_filtered, res.data["results"])
 
         serialized_recipe_to_not_be_filtered = RecipesSerializer(recipe_to_not_be_filtered).data
-        self.assertNotIn(serialized_recipe_to_not_be_filtered, res.data)
+        self.assertNotIn(serialized_recipe_to_not_be_filtered, res.data["results"])
 
     def test_recipe_list_filtered_by_time_to_make_in_minutes(self):
         recipe_to_be_filtered = generate_sample_recipe(user=self.user, time_to_make_in_minutes=10)
@@ -311,10 +311,10 @@ class ListRecipesFilteredApiTests(UserAuthenticatedMixinForTests, APITestCase):
         res = self.client.get(RECIPES_INDEX_URL, params)
 
         serialized_recipe_to_be_filtered = RecipesSerializer(recipe_to_be_filtered).data
-        self.assertIn(serialized_recipe_to_be_filtered, res.data)
+        self.assertIn(serialized_recipe_to_be_filtered, res.data["results"])
 
         serialized_recipe_to_not_be_filtered = RecipesSerializer(recipe_to_not_be_filtered).data
-        self.assertNotIn(serialized_recipe_to_not_be_filtered, res.data)
+        self.assertNotIn(serialized_recipe_to_not_be_filtered, res.data["results"])
 
 
 class ListRecipesSearchedApiTests(UserAuthenticatedMixinForTests, APITestCase):
@@ -326,10 +326,10 @@ class ListRecipesSearchedApiTests(UserAuthenticatedMixinForTests, APITestCase):
         res = self.client.get(RECIPES_INDEX_URL, params)
 
         serialized_recipe_to_be_searched = RecipesSerializer(recipe_to_be_searched).data
-        self.assertIn(serialized_recipe_to_be_searched, res.data)
+        self.assertIn(serialized_recipe_to_be_searched, res.data["results"])
 
         serialized_recipe_to_not_be_searched = RecipesSerializer(recipe_to_not_be_searched).data
-        self.assertNotIn(serialized_recipe_to_not_be_searched, res.data)
+        self.assertNotIn(serialized_recipe_to_not_be_searched, res.data["results"])
 
     def test_recipe_list_searched_by_description(self):
         recipe_to_be_searched = generate_sample_recipe(user=self.user, description="This is a unique description")
@@ -339,10 +339,10 @@ class ListRecipesSearchedApiTests(UserAuthenticatedMixinForTests, APITestCase):
         res = self.client.get(RECIPES_INDEX_URL, params)
 
         serialized_recipe_to_be_searched = RecipesSerializer(recipe_to_be_searched).data
-        self.assertIn(serialized_recipe_to_be_searched, res.data)
+        self.assertIn(serialized_recipe_to_be_searched, res.data["results"])
 
         serialized_recipe_to_not_be_searched = RecipesSerializer(recipe_to_not_be_searched).data
-        self.assertNotIn(serialized_recipe_to_not_be_searched, res.data)
+        self.assertNotIn(serialized_recipe_to_not_be_searched, res.data["results"])
 
     def test_recipe_list_searched_by_tag_name(self):
         tag_to_be_searched = generate_sample_tag(user=self.user, name="Vegan")
@@ -355,10 +355,10 @@ class ListRecipesSearchedApiTests(UserAuthenticatedMixinForTests, APITestCase):
         res = self.client.get(RECIPES_INDEX_URL, params)
 
         serialized_recipe_to_be_searched = RecipesSerializer(recipe_to_be_searched).data
-        self.assertIn(serialized_recipe_to_be_searched, res.data)
+        self.assertIn(serialized_recipe_to_be_searched, res.data["results"])
 
         serialized_recipe_to_not_be_searched = RecipesSerializer(recipe_to_not_be_searched).data
-        self.assertNotIn(serialized_recipe_to_not_be_searched, res.data)
+        self.assertNotIn(serialized_recipe_to_not_be_searched, res.data["results"])
 
     def test_recipe_list_searched_by_ingredient_name(self):
         ingredient_to_be_searched = generate_sample_ingredient(user=self.user, name="Cheese")
@@ -371,10 +371,10 @@ class ListRecipesSearchedApiTests(UserAuthenticatedMixinForTests, APITestCase):
         res = self.client.get(RECIPES_INDEX_URL, params)
 
         serialized_recipe_to_be_searched = RecipesSerializer(recipe_to_be_searched).data
-        self.assertIn(serialized_recipe_to_be_searched, res.data)
+        self.assertIn(serialized_recipe_to_be_searched, res.data["results"])
 
         serialized_recipe_to_not_be_searched = RecipesSerializer(recipe_to_not_be_searched).data
-        self.assertNotIn(serialized_recipe_to_not_be_searched, res.data)
+        self.assertNotIn(serialized_recipe_to_not_be_searched, res.data["results"])
 
 
 class ListRecipesOrderedApiTests(UserAuthenticatedMixinForTests, APITestCase):
@@ -387,13 +387,13 @@ class ListRecipesOrderedApiTests(UserAuthenticatedMixinForTests, APITestCase):
         params = {"ordering": "title"}
         res = self.client.get(RECIPES_INDEX_URL, params)
         serialized_recipes = RecipesSerializer(Recipe.objects.filter(user=self.user).order_by("title"), many=True).data
-        self.assertEqual(res.data, serialized_recipes)
+        self.assertEqual(res.data["results"], serialized_recipes)
 
         # Descending order
         params = {"ordering": "-title"}
         res = self.client.get(RECIPES_INDEX_URL, params)
         serialized_recipes = RecipesSerializer(Recipe.objects.filter(user=self.user).order_by("-title"), many=True).data
-        self.assertEqual(res.data, serialized_recipes)
+        self.assertEqual(res.data["results"], serialized_recipes)
 
     def test_recipe_list_ordered_by_price(self):
         generate_sample_recipe(user=self.user, price=10)
@@ -404,13 +404,13 @@ class ListRecipesOrderedApiTests(UserAuthenticatedMixinForTests, APITestCase):
         params = {"ordering": "price"}
         res = self.client.get(RECIPES_INDEX_URL, params)
         serialized_recipes = RecipesSerializer(Recipe.objects.filter(user=self.user).order_by("price"), many=True).data
-        self.assertEqual(res.data, serialized_recipes)
+        self.assertEqual(res.data["results"], serialized_recipes)
 
         # Descending order
         params = {"ordering": "-price"}
         res = self.client.get(RECIPES_INDEX_URL, params)
         serialized_recipes = RecipesSerializer(Recipe.objects.filter(user=self.user).order_by("-price"), many=True).data
-        self.assertEqual(res.data, serialized_recipes)
+        self.assertEqual(res.data["results"], serialized_recipes)
 
     def test_recipe_list_ordered_by_time_to_make_in_minutes(self):
         generate_sample_recipe(user=self.user, time_to_make_in_minutes=10)
@@ -423,7 +423,7 @@ class ListRecipesOrderedApiTests(UserAuthenticatedMixinForTests, APITestCase):
         serialized_recipes = RecipesSerializer(
             Recipe.objects.filter(user=self.user).order_by("time_to_make_in_minutes"), many=True
         ).data
-        self.assertEqual(res.data, serialized_recipes)
+        self.assertEqual(res.data["results"], serialized_recipes)
 
         # Descending order
         params = {"ordering": "-time_to_make_in_minutes"}
@@ -431,4 +431,4 @@ class ListRecipesOrderedApiTests(UserAuthenticatedMixinForTests, APITestCase):
         serialized_recipes = RecipesSerializer(
             Recipe.objects.filter(user=self.user).order_by("-time_to_make_in_minutes"), many=True
         ).data
-        self.assertEqual(res.data, serialized_recipes)
+        self.assertEqual(res.data["results"], serialized_recipes)

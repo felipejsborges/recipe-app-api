@@ -70,7 +70,7 @@ class ListTagsApiTests(UserAuthenticatedMixinForTests, APITestCase):
 
         existing_tags = Tag.objects.all().order_by("name")
         serializer = TagsSerializer(existing_tags, many=True)
-        self.assertEqual(res.data, serializer.data)
+        self.assertEqual(res.data["results"], serializer.data)
 
     def test_tag_list_limited_to_user(self):
         random_quantity_linked_to_other_user = randint(1, 3)
@@ -87,4 +87,4 @@ class ListTagsApiTests(UserAuthenticatedMixinForTests, APITestCase):
 
         tags = Tag.objects.filter(user=self.user).order_by("name")
         serializer = TagsSerializer(tags, many=True)
-        self.assertEqual(res.data, serializer.data)
+        self.assertEqual(res.data["results"], serializer.data)

@@ -70,7 +70,7 @@ class ListIngredientsApiTests(UserAuthenticatedMixinForTests, APITestCase):
 
         existing_ingredients = Ingredient.objects.all().order_by("name")
         serializer = IngredientsSerializer(existing_ingredients, many=True)
-        self.assertEqual(res.data, serializer.data)
+        self.assertEqual(res.data["results"], serializer.data)
 
     def test_ingredient_list_limited_to_user(self):
         random_quantity_linked_to_other_user = randint(1, 3)
@@ -87,4 +87,4 @@ class ListIngredientsApiTests(UserAuthenticatedMixinForTests, APITestCase):
 
         ingredients = Ingredient.objects.filter(user=self.user).order_by("name")
         serializer = IngredientsSerializer(ingredients, many=True)
-        self.assertEqual(res.data, serializer.data)
+        self.assertEqual(res.data["results"], serializer.data)
