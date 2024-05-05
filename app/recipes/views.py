@@ -7,6 +7,7 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from shared.filters.is_owner_filter_backend import IsOwnerFilterBackend
 
 SEARCH_FIELDS = ["title", "description", "user__name", "user__email", "tags__name", "ingredients__name"]
 ORDERING_FIELDS = ["title", "price", "time_to_make_in_minutes"]
@@ -34,6 +35,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     filterset_class = RecipeFilter
+    filter_backends = viewsets.ModelViewSet.filter_backends + [IsOwnerFilterBackend]
     search_fields = SEARCH_FIELDS
     ordering_fields = ORDERING_FIELDS
     ordering = ["-id"]

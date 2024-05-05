@@ -4,7 +4,6 @@ Advanced docs: https://django-filter.readthedocs.io/en/latest/ref/filters.html
 """
 
 from core.models import Recipe
-from django.db.models.query import QuerySet
 from django_filters import rest_framework as filters
 
 
@@ -23,19 +22,3 @@ class RecipeFilter(filters.FilterSet):
 
     def _filter_in(self, queryset, name, value):
         return queryset.filter(**{f"{name}__in": value.split(",")})
-
-    @property
-    def qs(self):
-        queryset = super().qs
-
-        queryset = self._filter_by_user(queryset)
-
-        return queryset
-
-    def _filter_by_user(self, queryset: QuerySet):
-        user = getattr(self.request, "user", None)
-
-        if user is None:
-            return self.queryset.none()
-
-        return queryset.filter(user=user)
