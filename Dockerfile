@@ -8,8 +8,8 @@ ENV PYTHONUNBUFFERED 1
 COPY ./requirements.txt /tmp/requirements.txt
 COPY ./requirements.dev.txt /tmp/requirements.dev.txt
 COPY ./scripts /scripts
-COPY ./app /app
-WORKDIR /app
+COPY ./app /usr/src/app/
+WORKDIR /usr/src/app/
 EXPOSE 8000
 
 # Create a venv to avoid conflitcs with the image packages (edge case)

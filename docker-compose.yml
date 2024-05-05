@@ -7,13 +7,14 @@ services:
     restart: always
     ports:
       - "8001:8000"
+      - "5679:5679"
     volumes:
-      - ./app:/app
+      - ./app/:/usr/src/app/
       - dev-static-data:/vol/web
     command: >
       sh -c "python manage.py wait_for_db &&
              python manage.py migrate &&
-             python manage.py runserver 0.0.0.0:8000"
+             python -m debugpy --listen 0.0.0.0:5679 manage.py runserver 0.0.0.0:8000"
     environment:
       - DB_HOST=db
       - DB_NAME=devdb
