@@ -8,19 +8,16 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+SEARCH_FIELDS = ["title", "description", "user__name", "user__email", "tags__name", "ingredients__name"]
+
 
 @extend_schema_view(
     list=extend_schema(
         parameters=[
             OpenApiParameter(
-                "tags",
+                "search",
                 OpenApiTypes.STR,
-                description="Comma separated list of tag IDs to filter the recipes",
-            ),
-            OpenApiParameter(
-                "ingredients",
-                OpenApiTypes.STR,
-                description="Comma separated list of ingredient IDs to filter the recipes",
+                description="Search by: " + ", ".join(SEARCH_FIELDS),
             ),
         ]
     )
@@ -31,6 +28,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     filterset_class = RecipeFilter
+    search_fields = SEARCH_FIELDS
 
     def get_queryset(self):
         return self.queryset.order_by("-id").distinct()

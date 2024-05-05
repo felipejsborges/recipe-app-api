@@ -14,7 +14,8 @@ class RecipeFilter(filters.FilterSet):
     title = filters.CharFilter(lookup_expr="iexact")
     price_gte = filters.NumberFilter(field_name="price", lookup_expr="gte")
     price_lte = filters.NumberFilter(field_name="price", lookup_expr="lte")
-    description = filters.CharFilter(lookup_expr="icontains")
+    time_to_make_in_minutes_gte = filters.NumberFilter(field_name="time_to_make_in_minutes", lookup_expr="gte")
+    time_to_make_in_minutes_lte = filters.NumberFilter(field_name="time_to_make_in_minutes", lookup_expr="lte")
 
     class Meta:
         model = Recipe

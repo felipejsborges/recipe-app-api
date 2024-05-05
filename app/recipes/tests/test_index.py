@@ -218,6 +218,8 @@ class ListRecipesApiTests(UserAuthenticatedMixinForTests, APITestCase):
         serializer = RecipesSerializer(recipes, many=True)
         self.assertEqual(res.data, serializer.data)
 
+
+class ListRecipesFilteredApiTests(UserAuthenticatedMixinForTests, APITestCase):
     def test_recipe_list_filtered_by_tags(self):
         tag_to_be_filtered = generate_sample_tag(user=self.user, name="Vegan")
         recipe_to_be_filtered = generate_sample_recipe(
@@ -271,3 +273,105 @@ class ListRecipesApiTests(UserAuthenticatedMixinForTests, APITestCase):
 
         serialized_recipe_without_any_ingredient = RecipesSerializer(recipe_without_any_ingredient).data
         self.assertNotIn(serialized_recipe_without_any_ingredient, res.data)
+
+    def test_recipe_list_filtered_by_title(self):
+        recipe_to_be_filtered = generate_sample_recipe(user=self.user, title="Thai Vegetable Curry")
+        recipe_to_not_be_filtered = generate_sample_recipe(user=self.user, title="Aubergine with Tahini")
+
+        params = {"title": recipe_to_be_filtered.title}
+        res = self.client.get(RECIPES_INDEX_URL, params)
+
+        serialized_recipe_to_be_filtered = RecipesSerializer(recipe_to_be_filtered).data
+        self.assertIn(serialized_recipe_to_be_filtered, res.data)
+
+        serialized_recipe_to_not_be_filtered = RecipesSerializer(recipe_to_not_be_filtered).data
+        self.assertNotIn(serialized_recipe_to_not_be_filtered, res.data)
+
+    def test_recipe_list_filtered_by_price(self):
+        recipe_to_be_filtered = generate_sample_recipe(user=self.user, price=10)
+        recipe_to_not_be_filtered = generate_sample_recipe(user=self.user, price=20)
+
+        params = {"price_gte": recipe_to_be_filtered.price - 1, "price_lte": recipe_to_be_filtered.price + 1}
+        res = self.client.get(RECIPES_INDEX_URL, params)
+
+        serialized_recipe_to_be_filtered = RecipesSerializer(recipe_to_be_filtered).data
+        self.assertIn(serialized_recipe_to_be_filtered, res.data)
+
+        serialized_recipe_to_not_be_filtered = RecipesSerializer(recipe_to_not_be_filtered).data
+        self.assertNotIn(serialized_recipe_to_not_be_filtered, res.data)
+
+    def test_recipe_list_filtered_by_time_to_make_in_minutes(self):
+        recipe_to_be_filtered = generate_sample_recipe(user=self.user, time_to_make_in_minutes=10)
+        recipe_to_not_be_filtered = generate_sample_recipe(user=self.user, time_to_make_in_minutes=20)
+
+        params = {
+            "time_to_make_in_minutes_gte": recipe_to_be_filtered.time_to_make_in_minutes - 1,
+            "time_to_make_in_minutes_lte": recipe_to_be_filtered.time_to_make_in_minutes + 1,
+        }
+        res = self.client.get(RECIPES_INDEX_URL, params)
+
+        serialized_recipe_to_be_filtered = RecipesSerializer(recipe_to_be_filtered).data
+        self.assertIn(serialized_recipe_to_be_filtered, res.data)
+
+        serialized_recipe_to_not_be_filtered = RecipesSerializer(recipe_to_not_be_filtered).data
+        self.assertNotIn(serialized_recipe_to_not_be_filtered, res.data)
+
+
+class ListRecipesSearchedApiTests(UserAuthenticatedMixinForTests, APITestCase):
+    def test_recipe_list_searched_by_title(self):
+        recipe_to_be_searched = generate_sample_recipe(user=self.user, title="Thai Vegetable Curry")
+        recipe_to_not_be_searched = generate_sample_recipe(user=self.user, title="Aubergine with Tahini")
+
+        params = {"search": recipe_to_be_searched.title.split(" ")[1]}
+        res = self.client.get(RECIPES_INDEX_URL, params)
+
+        serialized_recipe_to_be_searched = RecipesSerializer(recipe_to_be_searched).data
+        self.assertIn(serialized_recipe_to_be_searched, res.data)
+
+        serialized_recipe_to_not_be_searched = RecipesSerializer(recipe_to_not_be_searched).data
+        self.assertNotIn(serialized_recipe_to_not_be_searched, res.data)
+
+    def test_recipe_list_searched_by_description(self):
+        recipe_to_be_searched = generate_sample_recipe(user=self.user, description="This is a unique description")
+        recipe_to_not_be_searched = generate_sample_recipe(user=self.user, description="This is another description")
+
+        params = {"search": "unique"}
+        res = self.client.get(RECIPES_INDEX_URL, params)
+
+        serialized_recipe_to_be_searched = RecipesSerializer(recipe_to_be_searched).data
+        self.assertIn(serialized_recipe_to_be_searched, res.data)
+
+        serialized_recipe_to_not_be_searched = RecipesSerializer(recipe_to_not_be_searched).data
+        self.assertNotIn(serialized_recipe_to_not_be_searched, res.data)
+
+    def test_recipe_list_searched_by_tag_name(self):
+        tag_to_be_searched = generate_sample_tag(user=self.user, name="Vegan")
+        recipe_to_be_searched = generate_sample_recipe(
+            user=self.user, tags=[model_to_dict(tag_to_be_searched, fields="id")]
+        )
+        recipe_to_not_be_searched = generate_sample_recipe(user=self.user)
+
+        params = {"search": tag_to_be_searched.name}
+        res = self.client.get(RECIPES_INDEX_URL, params)
+
+        serialized_recipe_to_be_searched = RecipesSerializer(recipe_to_be_searched).data
+        self.assertIn(serialized_recipe_to_be_searched, res.data)
+
+        serialized_recipe_to_not_be_searched = RecipesSerializer(recipe_to_not_be_searched).data
+        self.assertNotIn(serialized_recipe_to_not_be_searched, res.data)
+
+    def test_recipe_list_searched_by_ingredient_name(self):
+        ingredient_to_be_searched = generate_sample_ingredient(user=self.user, name="Cheese")
+        recipe_to_be_searched = generate_sample_recipe(
+            user=self.user, ingredients=[model_to_dict(ingredient_to_be_searched, fields="id")]
+        )
+        recipe_to_not_be_searched = generate_sample_recipe(user=self.user)
+
+        params = {"search": ingredient_to_be_searched.name}
+        res = self.client.get(RECIPES_INDEX_URL, params)
+
+        serialized_recipe_to_be_searched = RecipesSerializer(recipe_to_be_searched).data
+        self.assertIn(serialized_recipe_to_be_searched, res.data)
+
+        serialized_recipe_to_not_be_searched = RecipesSerializer(recipe_to_not_be_searched).data
+        self.assertNotIn(serialized_recipe_to_not_be_searched, res.data)
