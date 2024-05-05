@@ -375,3 +375,60 @@ class ListRecipesSearchedApiTests(UserAuthenticatedMixinForTests, APITestCase):
 
         serialized_recipe_to_not_be_searched = RecipesSerializer(recipe_to_not_be_searched).data
         self.assertNotIn(serialized_recipe_to_not_be_searched, res.data)
+
+
+class ListRecipesOrderedApiTests(UserAuthenticatedMixinForTests, APITestCase):
+    def test_recipe_list_ordered_by_title(self):
+        generate_sample_recipe(user=self.user, title="Aubergine with Tahini")
+        generate_sample_recipe(user=self.user, title="Fish and chips")
+        generate_sample_recipe(user=self.user, title="Thai Vegetable Curry")
+
+        # Ascending order
+        params = {"ordering": "title"}
+        res = self.client.get(RECIPES_INDEX_URL, params)
+        serialized_recipes = RecipesSerializer(Recipe.objects.filter(user=self.user).order_by("title"), many=True).data
+        self.assertEqual(res.data, serialized_recipes)
+
+        # Descending order
+        params = {"ordering": "-title"}
+        res = self.client.get(RECIPES_INDEX_URL, params)
+        serialized_recipes = RecipesSerializer(Recipe.objects.filter(user=self.user).order_by("-title"), many=True).data
+        self.assertEqual(res.data, serialized_recipes)
+
+    def test_recipe_list_ordered_by_price(self):
+        generate_sample_recipe(user=self.user, price=10)
+        generate_sample_recipe(user=self.user, price=20)
+        generate_sample_recipe(user=self.user, price=30)
+
+        # Ascending order
+        params = {"ordering": "price"}
+        res = self.client.get(RECIPES_INDEX_URL, params)
+        serialized_recipes = RecipesSerializer(Recipe.objects.filter(user=self.user).order_by("price"), many=True).data
+        self.assertEqual(res.data, serialized_recipes)
+
+        # Descending order
+        params = {"ordering": "-price"}
+        res = self.client.get(RECIPES_INDEX_URL, params)
+        serialized_recipes = RecipesSerializer(Recipe.objects.filter(user=self.user).order_by("-price"), many=True).data
+        self.assertEqual(res.data, serialized_recipes)
+
+    def test_recipe_list_ordered_by_time_to_make_in_minutes(self):
+        generate_sample_recipe(user=self.user, time_to_make_in_minutes=10)
+        generate_sample_recipe(user=self.user, time_to_make_in_minutes=20)
+        generate_sample_recipe(user=self.user, time_to_make_in_minutes=30)
+
+        # Ascending order
+        params = {"ordering": "time_to_make_in_minutes"}
+        res = self.client.get(RECIPES_INDEX_URL, params)
+        serialized_recipes = RecipesSerializer(
+            Recipe.objects.filter(user=self.user).order_by("time_to_make_in_minutes"), many=True
+        ).data
+        self.assertEqual(res.data, serialized_recipes)
+
+        # Descending order
+        params = {"ordering": "-time_to_make_in_minutes"}
+        res = self.client.get(RECIPES_INDEX_URL, params)
+        serialized_recipes = RecipesSerializer(
+            Recipe.objects.filter(user=self.user).order_by("-time_to_make_in_minutes"), many=True
+        ).data
+        self.assertEqual(res.data, serialized_recipes)

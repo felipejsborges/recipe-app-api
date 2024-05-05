@@ -9,6 +9,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 SEARCH_FIELDS = ["title", "description", "user__name", "user__email", "tags__name", "ingredients__name"]
+ORDERING_FIELDS = ["title", "price", "time_to_make_in_minutes"]
 
 
 @extend_schema_view(
@@ -18,6 +19,11 @@ SEARCH_FIELDS = ["title", "description", "user__name", "user__email", "tags__nam
                 "search",
                 OpenApiTypes.STR,
                 description="Search by: " + ", ".join(SEARCH_FIELDS),
+            ),
+            OpenApiParameter(
+                "ordering",
+                OpenApiTypes.STR,
+                description="Order by: " + ", ".join(ORDERING_FIELDS),
             ),
         ]
     )
@@ -29,9 +35,11 @@ class RecipesViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     filterset_class = RecipeFilter
     search_fields = SEARCH_FIELDS
+    ordering_fields = ORDERING_FIELDS
+    ordering = ["-id"]
 
     def get_queryset(self):
-        return self.queryset.order_by("-id").distinct()
+        return self.queryset.distinct()
 
     def get_serializer_class(self):
         if self.action == "list":
