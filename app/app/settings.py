@@ -163,3 +163,18 @@ SPECTACULAR_SETTINGS = {
     'VERSION': '1.0.0',
     'COMPONENT_SPLIT_REQUEST': True,
 }
+
+# Email settings
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "localhost")
+EMAIL_PORT = os.environ.get("EMAIL_PORT", 587)
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "changeme")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "changeme")
+EMAIL_USE_TLS = bool(int(os.environ.get("EMAIL_USE_TLS", 1)))
+EMAIL_USE_SSL = bool(int(os.environ.get("EMAIL_USE_SSL", 0)))
+EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# SES settings
+AWS_SES_REGION_NAME = os.environ.get("AWS_SES_REGION_NAME")
+AWS_SES_REGION_ENDPOINT = os.environ.get("AWS_SES_REGION_ENDPOINT")
+USE_SES_V2 = os.environ.get("USE_SES_V2")
