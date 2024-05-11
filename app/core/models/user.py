@@ -4,24 +4,29 @@ from django.core.mail import EmailMultiAlternatives
 from django.db import models
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
+from django_rest_passwordreset.models import ResetPasswordToken
 
 
-def send_email_to_user():
-    context = {
-        "receiver_name": "Klayton Claudio",
-        "age": 24,
-        "profession": "Software Dev",
-        "marital_status": "Married",
-        "address": "Jamil e uma noites",
-        "year": 2024,
-    }
+def generate_token_for_user(user: settings.AUTH_USER_MODEL):
+    # if not user.eligible_for_reset():
+    #     raise ValueError("User is not eligible for password reset.")
+    password_reset_tokens = user.password_reset_tokens.all()
 
-    template_name = "emails/tmp.html"
+    if password_reset_tokens.exists():
+        return password_reset_tokens.first()
+
+    return ResetPasswordToken.objects.create(user=user)
+
+
+def send_email_to_register_password(token):
+    context = {"token": token}
+
+    template_name = "emails/password_registration.html"
     html_content = render_to_string(template_name, context)
     text_content = strip_tags(html_content)
 
     email = EmailMultiAlternatives(
-        subject="Salve",
+        subject="Password Registration",
         body=text_content,
         from_email=settings.DEFAULT_FROM_EMAIL,
         to=["felipejsborges13@gmail.com"],
@@ -41,7 +46,9 @@ class UserManager(BaseUserManager):
         user = self.model(email=self.normalize_email(email), **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
-        send_email_to_user()
+
+        token = generate_token_for_user(user)
+        send_email_to_register_password(token.key)
 
         return user
 

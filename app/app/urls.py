@@ -32,6 +32,7 @@ urlpatterns = [
         name="api-docs",
     ),
     path("api/users/", include("users.urls")),
+    path("api/password_reset/", include("django_rest_passwordreset.urls", namespace="password_reset")),
     path("api/recipes/", include("recipes.urls")),
     path("api/tags/", include("tags.urls")),
     path("api/ingredients/", include("ingredients.urls")),
