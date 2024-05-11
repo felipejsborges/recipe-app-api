@@ -4,7 +4,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.db import models
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
-from django_rest_passwordreset.models import ResetPasswordToken
+from django_rest_passwordreset.models import ResetPasswordToken  # type: ignore
 
 
 def generate_token_for_user(user: settings.AUTH_USER_MODEL):
