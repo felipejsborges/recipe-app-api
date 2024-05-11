@@ -16,13 +16,13 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
+ENVIRONMENT = os.environ.get("ENVIRONMENT") or "dev"
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "changeme")
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY") or "changeme"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = ENVIRONMENT == "dev"
@@ -30,7 +30,7 @@ DEBUG = ENVIRONMENT == "dev"
 ALLOWED_HOSTS = tuple(
     filter(
         None,
-        os.environ.get("DJANGO_ALLOWED_HOSTS", "127.0.0.1").split(","),
+        (os.environ.get("DJANGO_ALLOWED_HOSTS") or "127.0.0.1").split(","),
     )
 )
 
@@ -92,10 +92,10 @@ WSGI_APPLICATION = "app.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "HOST": os.environ.get("DB_HOST", "db"),
-        "NAME": os.environ.get("DB_NAME", "devdb"),
-        "USER": os.environ.get("DB_USER", "devuser"),
-        "PASSWORD": os.environ.get("DB_PASS", "changeme"),
+        "HOST": os.environ.get("DB_HOST") or "db",
+        "NAME": os.environ.get("DB_NAME") or "devdb",
+        "USER": os.environ.get("DB_USER") or "devuser",
+        "PASSWORD": os.environ.get("DB_PASS") or "changeme",
     }
 }
 
@@ -165,17 +165,17 @@ SPECTACULAR_SETTINGS = {
 }
 
 # Email settings
-EMAIL_HOST = os.environ.get("EMAIL_HOST", "localhost")
+EMAIL_HOST = os.environ.get("EMAIL_HOST") or "localhost"
 EMAIL_PORT = 587
-EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "changeme")
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "changeme")
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER") or "changeme"
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD") or "changeme"
 EMAIL_USE_TLS = 1
 EMAIL_USE_SSL = 0
-EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
+EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND") or "django.core.mail.backends.console.EmailBackend"
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # SES settings
 if ENVIRONMENT != "dev":
     AWS_SES_REGION_NAME = os.environ.get("AWS_SES_REGION_NAME")
     AWS_SES_REGION_ENDPOINT = os.environ.get("AWS_SES_REGION_ENDPOINT")
-    USE_SES_V2 = os.environ.get("USE_SES_V2")
+    USE_SES_V2 = True

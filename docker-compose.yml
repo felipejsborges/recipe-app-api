@@ -29,7 +29,6 @@ services:
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - AWS_SES_REGION_NAME=${AWS_SES_REGION_NAME}
       - AWS_SES_REGION_ENDPOINT=${AWS_SES_REGION_ENDPOINT}
-      - USE_SES_V2=${USE_SES_V2}
     depends_on:
       - db
 
