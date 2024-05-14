@@ -23,6 +23,7 @@ from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 urlpatterns = [
+    path("__debug__/", include("debug_toolbar.urls")),
     path("admin/", admin.site.urls),
     path("api/health-check/", core_views.health_check, name="health-check"),
     path("api/schema/", SpectacularAPIView.as_view(), name="api-schema"),
