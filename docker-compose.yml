@@ -10,7 +10,8 @@ services:
       - "5679:5679"
     volumes:
       - ./app/:/usr/src/app/
-      - dev-static-data:/vol/web
+      - dev-static-data:/vol/web/static
+      - dev-media-data:/vol/web/media
     command: >
       sh -c "python manage.py wait_for_db &&
              python manage.py migrate &&
@@ -22,7 +23,6 @@ services:
       - DB_USER=${DB_USER}
       - DB_PASS=${DB_PASS}
       - EMAIL_HOST=${EMAIL_HOST}
-      - EMAIL_PORT=${EMAIL_PORT}
       - EMAIL_HOST_USER=${EMAIL_HOST_USER}
       - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
       - EMAIL_BACKEND=${EMAIL_BACKEND}
@@ -46,3 +46,4 @@ services:
 volumes:
   dev-db-data:
   dev-static-data:
+  dev-media-data:
