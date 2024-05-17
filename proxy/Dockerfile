@@ -1,6 +1,4 @@
-# FROM nginxinc/nginx-unprivileged:1-alpine
-FROM nginx:1.25.5-alpine
-
+FROM nginxinc/nginx-unprivileged:1.26-alpine
 LABEL maitainer="felipejsborges"
 
 COPY ./default.conf.tpl /etc/nginx/default.conf.tpl
@@ -11,6 +9,8 @@ ENV LISTEN_PORT=8000
 ENV APP_HOST=app
 ENV APP_PORT=9000
 
+USER root
+
 RUN mkdir -p /vol/static && \
 	chmod 755 /vol/static && \
 	touch /etc/nginx/conf.d/default.conf && \
@@ -18,5 +18,7 @@ RUN mkdir -p /vol/static && \
 	chmod +x /run.sh
 
 VOLUME /vol/static
+
+USER nginx
 
 CMD ["/run.sh"]
