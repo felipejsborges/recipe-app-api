@@ -20,3 +20,4 @@ docker compose run --rm terraform -chdir=$CHDIR apply
 docker compose run --rm terraform -chdir=$CHDIR output
 
 docker compose run --rm terraform -chdir=$CHDIR output my_sensitive_output
+
