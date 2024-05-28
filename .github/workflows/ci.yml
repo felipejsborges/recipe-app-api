@@ -1,0 +1,16 @@
+name: Continuous Integration
+
+on:
+  pull_request:
+    branches:
+      - main
+      - staging
+      - release
+
+jobs:
+  format-lint-test-validate:
+    name: Format, Lint, Test, and Validate
+    uses: ./.github/workflows/shared.yml
+    secrets:
+      DOCKERHUB_USER: ${{ vars.DOCKERHUB_USER }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
