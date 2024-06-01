@@ -5,7 +5,7 @@ variable "tf_state_bucket" {
 
 variable "tf_state_lock_table" {
   description = "Name of DynamoDB table for TF state locking"
-  default     = "my-app-api-tf-lock"
+  default     = "my-app-tf-lock"
 }
 
 variable "project" {
