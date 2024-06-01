@@ -1,6 +1,6 @@
 variable "tf_state_bucket" {
   description = "Name of S3 bucket in AWS for storing TF state"
-  default     = "my-app-api-state"
+  default     = "my-app-052118-tf-state"
 }
 
 variable "tf_state_lock_table" {
