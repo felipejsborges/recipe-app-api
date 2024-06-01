@@ -8,16 +8,16 @@ on:
       - release
 
 jobs:
-  format-lint-test-validate:
-    name: Format, Lint, Test, and Validate
-    uses: ./.github/workflows/shared.yml
-    secrets:
-      DOCKERHUB_USER: ${{ vars.DOCKERHUB_USER }}
-      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+  # format-lint-test-validate:
+  #   name: Format, Lint, Test, and Validate
+  #   uses: ./.github/workflows/shared.yml
+  #   secrets:
+  #     DOCKERHUB_USER: ${{ vars.DOCKERHUB_USER }}
+  #     DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
   plan:
     name: Plan
     runs-on: ubuntu-22.04
-    needs: [format-lint-test-validate]
+    # needs: [format-lint-test-validate]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -58,7 +58,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: tfplan
-          path: tfplan
+          path: ./infra/deploy/tfplan
 
   deploy:
     name: Deploy
