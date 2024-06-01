@@ -1,0 +1,31 @@
+name: API - Continuous Integration
+
+on:
+  pull_request:
+    branches:
+      - main
+      - staging
+      - release
+    paths:
+      - 'app/**'
+      - 'scripts/**'
+      - 'docker-compose.yml'
+      - 'docker-compose-deploy.yml'
+      - 'Dockerfile'
+      - 'requirements.txt'
+
+jobs:
+  lint-and-test:
+    name: Lint and Test
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Check linting
+        run: docker-compose run --rm app sh -c "flake8"
+      - name: Check formatting
+        run: docker-compose run --rm app sh -c "black ."
+      # - name: Check typing
+      #   run: docker-compose run --rm app sh -c "mypy ."
+      - name: Execute tests
+        run: docker-compose run --rm app sh -c "python manage.py wait_for_db && python manage.py test"

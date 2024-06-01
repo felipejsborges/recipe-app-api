@@ -1,0 +1,36 @@
+# - pipe api-cd
+#     - build and deploy
+
+name: API - Continuous Deployment
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+      - release
+    paths:
+      - 'app/**'
+      - 'scripts/**'
+      - 'docker-compose.yml'
+      - 'docker-compose-deploy.yml'
+      - 'Dockerfile'
+      - 'requirements.txt'
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build image
+        run: |
+          docker build --compress -t ${{ vars.ECR_REPO_APP }}:$GITHUB_SHA .
+      - name: Push image to ECR
+        env:
+          AWS_ACCESS_KEY_ID: ${{ vars.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          aws ecr get-login-password --region ${{vars.AWS_REGION}} | docker login --username AWS --password-stdin ${{ vars.AWS_ACCOUNT_ID }}.dkr.ecr.${{vars.AWS_REGION}}.amazonaws.com
+          docker push ${{ vars.ECR_REPO_APP }}:$GITHUB_SHA

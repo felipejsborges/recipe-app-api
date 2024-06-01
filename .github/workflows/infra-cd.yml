@@ -1,0 +1,40 @@
+# - pipe terraform-cd
+#     - apply the plan
+name: Infrastructure - Continuous Integration
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+      - release
+    paths:
+      - 'infra/deploy/**'
+
+env:
+  AWS_ACCESS_KEY_ID: ${{ vars.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+jobs:
+  terraform-apply:
+    name: Terraform apply
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set vars
+        run: |
+          if [[ $GITHUB_REF == 'refs/heads/main' ]]; then
+            echo "prod" > .workspace
+          elif [[ $GITHUB_REF == 'refs/heads/release' ]]; then
+            echo "release" > .workspace
+          else
+            echo "staging" > .workspace
+          fi
+      - name: Terraform init
+        run: docker compose run --rm terraform -chdir=infra/deploy/ init
+      - name: Terraform apply
+        run: |
+          workspace=$(cat .workspace)
+          docker compose run --rm terraform -chdir=infra/deploy/ workspace select -or-create $workspace
+          docker compose run --rm terraform -chdir=infra/deploy/ apply -auto-approve "$(workspace)-tfplan"

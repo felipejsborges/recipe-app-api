@@ -1,0 +1,63 @@
+name: Infrastructure - Continuous Integration
+
+on:
+  pull_request:
+    branches:
+      - main
+      - staging
+      - release
+    paths:
+      - 'infra/deploy/**'
+
+env:
+  AWS_ACCESS_KEY_ID: ${{ vars.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+jobs:
+  terraform-fmt-validate-plan:
+    name: Terraform format, validate, and vlan
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set vars
+        run: |
+          if [[ $GITHUB_REF == 'refs/heads/main' ]]; then
+            echo "prod" > .workspace
+          elif [[ $GITHUB_REF == 'refs/heads/release' ]]; then
+            echo "release" > .workspace
+          else
+            echo "staging" > .workspace
+          fi
+      - name: Terraform init
+        run: docker compose run --rm terraform -chdir=infra/deploy/ init
+      - name: Terraform fmt
+        run: docker compose run --rm terraform -chdir=infra/deploy/ fmt -check
+      - name: Terraform validate
+        run: docker compose run --rm terraform -chdir=infra/deploy/ validate
+      - name: Terraform plan
+        run: |
+          workspace=$(cat .workspace)
+          docker compose run --rm terraform -chdir=infra/deploy/ workspace select -or-create $workspace
+          docker compose run --rm terraform -chdir=infra/deploy/ plan -out="$(workspace)-tfplan"
+
+          docker compose run --rm terraform -chdir=infra/deploy/ apply -auto-approve 
+
+      - name: Upload terraform plan output
+        uses: actions/upload-artifact@v4
+        with:
+          name: "$(workspace)-tfplan"
+          path: "./infra/deploy/$(workspace)-tfplan"
+      - name: Add comment with terraform plan output
+        uses: actions/github-script@v7
+        env:
+          TERRAFORM_PLAN_OUTPUT: $(docker compose run --rm terraform -chdir=infra/deploy/ show -no-color $(workspace)-tfplan)"
+        with:
+            script: |
+              const body = `${process.env.TERRAFORM_PLAN_OUTPUT}`;
+              github.rest.issues.createComment({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  body: body
+              })
