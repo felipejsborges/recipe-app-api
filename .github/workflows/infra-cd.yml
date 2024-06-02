@@ -1,4 +1,4 @@
-name: Infrastructure - Continuous Integration
+name: Infrastructure - Continuous Deployment
 
 on:
   push:
@@ -35,6 +35,10 @@ jobs:
           elif [[ $BRANCH_NAME == 'release' ]]; then
             echo "release" > .workspace
           fi
+      - name: Download Terraform Plan
+        uses: actions/download-artifact@v4
+        with:
+          name: ${BRANCH_NAME}-tfplan
       - name: Terraform init
         run: docker compose -f ./infra/docker-compose.yml run --rm terraform -chdir=deploy/ init
       - name: Terraform apply
