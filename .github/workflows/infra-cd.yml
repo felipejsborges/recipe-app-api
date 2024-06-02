@@ -1,14 +1,26 @@
 name: Infrastructure - Continuous Deployment
 
+# on:
+#   push:
+#     branches:
+#       - main
+#       - staging
+#       - release
+#     paths:
+#       - '.github/workflows/infra-cd.yml'
+#       - 'infra/deploy/**'
+
 on:
-  push:
+  workflow_dispatch:
     branches:
       - main
       - staging
       - release
-    paths:
-      - '.github/workflows/infra-cd.yml'
-      - 'infra/deploy/**'
+    inputs:
+      terraform-plan-workflow-run-id:
+        description: 'Terraform Plan Workflow Run ID'
+        required: true
+        type: number
 
 env:
   AWS_ACCESS_KEY_ID: ${{ vars.AWS_ACCESS_KEY_ID }}
@@ -18,9 +30,8 @@ jobs:
   terraform-apply:
     name: Terraform apply
     runs-on: ubuntu-22.04
-    # permissions:
-    #   contents: read
-    #   pull-requests: write
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -39,6 +50,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ${{ env.BRANCH_NAME }}-tfplan
+          path: ./infra/deploy/
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          # github-token: ${{ github.token }}
+          run-id: ${{ github.event.inputs.terraform-plan-workflow-run-id }}
       - name: Terraform init
         run: docker compose -f ./infra/docker-compose.yml run --rm terraform -chdir=deploy/ init
       - name: Terraform apply
