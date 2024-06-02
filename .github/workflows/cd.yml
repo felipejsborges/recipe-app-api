@@ -1,11 +1,7 @@
 name: Continuous Deployment
 
 on:
-  push:
-    branches:
-      - main
-      - staging
-      - release
+  workflow_call:
 
 jobs:
   # format-lint-test-validate:
