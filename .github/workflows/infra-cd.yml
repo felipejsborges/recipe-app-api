@@ -1,6 +1,4 @@
-# - pipe terraform-cd
-#     - apply the plan
-name: Infrastructure - Continuous Integration
+name: Infrastructure - Continuous Deployment
 
 on:
   push:
@@ -9,6 +7,7 @@ on:
       - staging
       - release
     paths:
+      - '.github/workflows/infra-cd.yml'
       - 'infra/deploy/**'
 
 env:
@@ -19,22 +18,66 @@ jobs:
   terraform-apply:
     name: Terraform apply
     runs-on: ubuntu-22.04
+    # permissions:
+    #   contents: read
+    #   pull-requests: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Add env with branch name
+        run: echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
       - name: Set vars
         run: |
-          if [[ $GITHUB_REF == 'refs/heads/main' ]]; then
+          if [[ $BRANCH_NAME == 'main' ]]; then
             echo "prod" > .workspace
-          elif [[ $GITHUB_REF == 'refs/heads/release' ]]; then
-            echo "release" > .workspace
-          else
+          elif [[ $BRANCH_NAME == 'staging' ]]; then
             echo "staging" > .workspace
+          elif [[ $BRANCH_NAME == 'release' ]]; then
+            echo "release" > .workspace
           fi
+      - name: Download Terraform Plan
+        uses: actions/download-artifact@v4
+        with:
+          name: ${BRANCH_NAME}-tfplan
       - name: Terraform init
-        run: docker compose run --rm terraform -chdir=infra/deploy/ init
+        run: docker compose -f ./infra/docker-compose.yml run --rm terraform -chdir=deploy/ init
       - name: Terraform apply
         run: |
           workspace=$(cat .workspace)
-          docker compose run --rm terraform -chdir=infra/deploy/ workspace select -or-create $workspace
-          docker compose run --rm terraform -chdir=infra/deploy/ apply -auto-approve "$(workspace)-tfplan"
+          docker compose -f ./infra/docker-compose.yml run --rm terraform -chdir=deploy/ workspace select -or-create ${workspace}
+          docker compose -f ./infra/docker-compose.yml run --rm terraform -chdir=deploy/ apply -auto-approve "${BRANCH_NAME}-tfplan"
+      # - name: Terraform show plan output
+      #   id: terraform-show-plan-output
+      #   run: |
+      #     TERRAFORM_PLAN=$(docker compose -f ./infra/docker-compose.yml run --rm terraform -chdir=deploy/ show -no-color "${{ github.base_ref }}-tfplan")
+          
+      #     delimiter="$(openssl rand -hex 8)"
+      #     echo "summary<<${delimiter}" >> $GITHUB_OUTPUT
+      #     echo "## Terraform Plan Output" >> $GITHUB_OUTPUT
+      #     echo "<details><summary>Click to expand</summary>" >> $GITHUB_OUTPUT
+      #     echo "" >> $GITHUB_OUTPUT
+      #     echo '```terraform' >> $GITHUB_OUTPUT
+      #     echo "$TERRAFORM_PLAN" >> $GITHUB_OUTPUT
+      #     echo '```' >> $GITHUB_OUTPUT
+      #     echo "</details>" >> $GITHUB_OUTPUT
+      #     echo "${delimiter}" >> $GITHUB_OUTPUT
+      # - name: Publish Terraform Plan to Task Summary
+      #   env:
+      #     SUMMARY: ${{ steps.terraform-show-plan-output.outputs.summary }}
+      #   run: |
+      #     echo "$SUMMARY" >> $GITHUB_STEP_SUMMARY
+      # - name: Add comment with terraform plan output
+      #   uses: actions/github-script@v7
+      #   env:
+      #     SUMMARY: "${{ steps.terraform-show-plan-output.outputs.summary }}"
+      #   with:
+      #     github-token: ${{ secrets.GITHUB_TOKEN }}
+      #     script: |
+      #       const body = `${process.env.SUMMARY}`;
+      #       github.rest.issues.createComment({
+      #           issue_number: context.issue.number,
+      #           owner: context.repo.owner,
+      #           repo: context.repo.repo,
+      #           body: body
+      #       })
+          
