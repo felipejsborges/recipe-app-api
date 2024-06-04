@@ -1,6 +1,7 @@
 name: Infrastructure - Continuous Integration
 
 on:
+  workflow_dispatch:
   pull_request:
     branches:
       - main
