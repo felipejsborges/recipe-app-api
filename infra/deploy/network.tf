@@ -6,9 +6,13 @@ resource "aws_vpc" "main" {
   }
 }
 
-# resource "aws_internet_gateway" "main" {
-#   vpc_id = aws_vpc.main.id
-# }
+resource "aws_internet_gateway" "main" {
+  vpc_id = aws_vpc.main.id
+
+  tags = {
+    Name = "${local.prefix}"
+  }
+}
 
 # resource "aws_subnet" "public_a" {
 #   vpc_id                  = aws_vpc.main.id
