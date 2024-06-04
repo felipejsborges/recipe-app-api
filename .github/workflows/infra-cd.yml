@@ -12,10 +12,6 @@ name: Infrastructure - Continuous Deployment
 
 on:
   workflow_dispatch:
-    branches:
-      - main
-      - staging
-      - release
     inputs:
       terraform-plan-workflow-run-id:
         description: 'Terraform Plan Workflow Run ID'
