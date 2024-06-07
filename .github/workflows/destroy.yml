@@ -11,6 +11,10 @@ on:
           - staging # remove this line in a real-world scenario
           - prod # remove this line in a real-world scenario
 
+env:
+  AWS_ACCESS_KEY_ID: ${{ vars.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
 jobs:
   destroy:
     name: Destroy
@@ -18,12 +22,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Terraform Destroy
-        env:
-          AWS_ACCESS_KEY_ID: ${{ vars.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      - name: Terraform init
+        run: docker compose -f ./infra/docker-compose.yml run --rm terraform -chdir=deploy/ init
+      - name: Terraform destroy
         run: |
-          export TF_WORKSPACE=${{ github.event.inputs.environment }}
-          cd infra/
-          docker compose run --rm terraform -chdir=deploy/ init
-          docker compose run --rm terraform -chdir=deploy/ destroy -auto-approve
+          workspace=${{ github.event.inputs.environment }}
+          docker compose -f ./infra/docker-compose.yml run --rm terraform -chdir=deploy/ workspace select -or-create ${workspace}
+          docker compose -f ./infra/docker-compose.yml run --rm terraform -chdir=deploy/ destroy -auto-approve
