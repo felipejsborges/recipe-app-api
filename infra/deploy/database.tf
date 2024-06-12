@@ -22,6 +22,10 @@ resource "aws_vpc_security_group_ingress_rule" "allow_tls_ipv4" {
   ip_protocol                  = "tcp"
   from_port                    = 5432
   to_port                      = 5432
+
+  # security_groups = [
+  #   aws_security_group.ecs_service.id
+  # ]
 }
 
 resource "aws_db_instance" "main" {
