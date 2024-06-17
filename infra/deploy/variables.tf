@@ -24,12 +24,10 @@ variable "db_password" {
 
 variable "ecr_proxy_image" {
   description = "Path to the ECR repo with the proxy image"
-  default     = "339712875811.dkr.ecr.us-east-1.amazonaws.com/recipe-app-api-proxy"
 }
 
 variable "ecr_app_image" {
   description = "Path to the ECR repo with the API image"
-  default     = "339712875811.dkr.ecr.us-east-1.amazonaws.com/recipe-app-api-app"
 }
 
 variable "django_secret_key" {
