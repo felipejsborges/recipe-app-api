@@ -10,6 +10,7 @@ on:
           - release
           - staging # remove this line in a real-world scenario
           - prod # remove this line in a real-world scenario
+          - default # tmp
 
 env:
   AWS_ACCESS_KEY_ID: ${{ vars.AWS_ACCESS_KEY_ID }}
