@@ -91,7 +91,7 @@ resource "aws_ecs_task_definition" "api" {
             value = aws_db_instance.main.password
           },
           {
-            name  = "ALLOWED_HOSTS"
+            name  = "DJANGO_ALLOWED_HOSTS"
             value = "*" # TODO: Change to domain name
           }
         ]
