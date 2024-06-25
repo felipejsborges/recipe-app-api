@@ -67,13 +67,14 @@ resource "aws_security_group" "endpoint_access" {
   description = "Access to endpoints"
   name        = "${local.prefix}-endpoint-access"
   vpc_id      = aws_vpc.main.id
+}
 
-  ingress {
-    cidr_blocks = [aws_vpc.main.cidr_block]
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-  }
+resource "aws_vpc_security_group_ingress_rule" "http" {
+  security_group_id = aws_security_group.endpoint_access.id
+  cidr_ipv4         = aws_vpc.main.cidr_block
+  ip_protocol       = "tcp"
+  from_port         = 443
+  to_port           = 443
 }
 
 resource "aws_vpc_endpoint" "ecr" {

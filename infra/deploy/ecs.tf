@@ -153,33 +153,39 @@ resource "aws_security_group" "ecs_service" {
   description = "Access rules for the ECS service."
   name        = "${local.prefix}-ecs-service"
   vpc_id      = aws_vpc.main.id
+}
 
-  # Outbound access to endpoints
-  egress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+resource "aws_vpc_security_group_egress_rule" "https" {
+  security_group_id = aws_security_group.ecs_service.id
+  cidr_ipv4         = "0.0.0.0/0"
+  ip_protocol       = "tcp"
+  from_port         = 443
+  to_port           = 443
+}
 
-  # RDS connectivity
-  egress {
-    from_port = 5432
-    to_port   = 5432
-    protocol  = "tcp"
-    cidr_blocks = [
-      aws_subnet.private_a.cidr_block,
-      aws_subnet.private_b.cidr_block,
-    ]
-  }
+resource "aws_vpc_security_group_egress_rule" "rds_private_a" {
+  security_group_id = aws_security_group.ecs_service.id
+  cidr_ipv4         = aws_subnet.private_a.cidr_block
+  ip_protocol       = "tcp"
+  from_port         = 5432
+  to_port           = 5432
+}
 
-  # HTTP inbound access
-  ingress {
-    from_port   = 8000
-    to_port     = 8000
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  } # TODO - block to only allow from ALB
+resource "aws_vpc_security_group_egress_rule" "rds_private_b" {
+  security_group_id = aws_security_group.ecs_service.id
+  cidr_ipv4         = aws_subnet.private_b.cidr_block
+  ip_protocol       = "tcp"
+  from_port         = 5432
+  to_port           = 5432
+}
+
+resource "aws_vpc_security_group_ingress_rule" "http_tmp" {
+  # TODO - block to only allow from ALB
+  security_group_id = aws_security_group.ecs_service.id
+  cidr_ipv4         = "0.0.0.0/0"
+  ip_protocol       = "tcp"
+  from_port         = 8000
+  to_port           = 8000
 }
 
 resource "aws_ecs_service" "api" {
