@@ -155,6 +155,14 @@ resource "aws_security_group" "ecs_service" {
   vpc_id      = aws_vpc.main.id
 }
 
+resource "aws_vpc_security_group_ingress_rule" "lb_8000" {
+  security_group_id            = aws_security_group.ecs_service.id
+  referenced_security_group_id = aws_security_group.lb.id
+  ip_protocol                  = "tcp"
+  from_port                    = 8000
+  to_port                      = 8000
+}
+
 resource "aws_vpc_security_group_egress_rule" "https" {
   security_group_id = aws_security_group.ecs_service.id
   cidr_ipv4         = "0.0.0.0/0"
@@ -171,22 +179,13 @@ resource "aws_vpc_security_group_egress_rule" "rds_private_a" {
   to_port           = 5432
 }
 
-resource "aws_vpc_security_group_egress_rule" "rds_private_b" {
-  security_group_id = aws_security_group.ecs_service.id
-  cidr_ipv4         = aws_subnet.private_b.cidr_block
-  ip_protocol       = "tcp"
-  from_port         = 5432
-  to_port           = 5432
-}
-
-resource "aws_vpc_security_group_ingress_rule" "http_tmp" {
-  # TODO - block to only allow from ALB
-  security_group_id = aws_security_group.ecs_service.id
-  cidr_ipv4         = "0.0.0.0/0"
-  ip_protocol       = "tcp"
-  from_port         = 8000
-  to_port           = 8000
-}
+# resource "aws_vpc_security_group_egress_rule" "rds_private_b" {
+#   security_group_id = aws_security_group.ecs_service.id
+#   cidr_ipv4         = aws_subnet.private_b.cidr_block
+#   ip_protocol       = "tcp"
+#   from_port         = 5432
+#   to_port           = 5432
+# }
 
 resource "aws_ecs_service" "api" {
   name                   = "${local.prefix}-api"
@@ -198,15 +197,17 @@ resource "aws_ecs_service" "api" {
   enable_execute_command = true
 
   network_configuration {
-    assign_public_ip = true
-
     subnets = [
-      aws_subnet.public_a.id,
-      aws_subnet.public_b.id
+      aws_subnet.private_a.id,
+      # aws_subnet.private_b.id
     ]
 
     security_groups = [aws_security_group.ecs_service.id]
   }
 
-  # depends_on      = [aws_iam_role_policy.foo]
+  load_balancer {
+    target_group_arn = aws_lb_target_group.api.arn
+    container_name   = "proxy"
+    container_port   = 8000
+  }
 }

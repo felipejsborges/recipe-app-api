@@ -39,16 +39,16 @@ resource "aws_route_table_association" "public_a" {
   route_table_id = aws_route_table.main.id
 }
 
-resource "aws_subnet" "public_b" {
-  vpc_id                  = aws_vpc.main.id
-  cidr_block              = "10.1.2.0/24"
-  map_public_ip_on_launch = true
-  availability_zone       = "${data.aws_region.current.name}b"
-}
-resource "aws_route_table_association" "public_b" {
-  subnet_id      = aws_subnet.public_b.id
-  route_table_id = aws_route_table.main.id
-}
+# resource "aws_subnet" "public_b" {
+#   vpc_id                  = aws_vpc.main.id
+#   cidr_block              = "10.1.2.0/24"
+#   map_public_ip_on_launch = true
+#   availability_zone       = "${data.aws_region.current.name}b"
+# }
+# resource "aws_route_table_association" "public_b" {
+#   subnet_id      = aws_subnet.public_b.id
+#   route_table_id = aws_route_table.main.id
+# }
 
 
 resource "aws_subnet" "private_a" {
@@ -57,11 +57,11 @@ resource "aws_subnet" "private_a" {
   availability_zone = "${data.aws_region.current.name}a"
 }
 
-resource "aws_subnet" "private_b" {
-  vpc_id            = aws_vpc.main.id
-  cidr_block        = "10.1.11.0/24"
-  availability_zone = "${data.aws_region.current.name}b"
-}
+# resource "aws_subnet" "private_b" {
+#   vpc_id            = aws_vpc.main.id
+#   cidr_block        = "10.1.11.0/24"
+#   availability_zone = "${data.aws_region.current.name}b"
+# }
 
 resource "aws_security_group" "endpoint_access" {
   description = "Access to endpoints"
@@ -83,7 +83,10 @@ resource "aws_vpc_endpoint" "ecr" {
   vpc_endpoint_type   = "Interface"
   private_dns_enabled = true
 
-  subnet_ids = [aws_subnet.private_a.id, aws_subnet.private_b.id]
+  subnet_ids = [
+    aws_subnet.private_a.id,
+    # aws_subnet.private_b.id
+  ]
 
   security_group_ids = [
     aws_security_group.endpoint_access.id
@@ -96,7 +99,10 @@ resource "aws_vpc_endpoint" "dkr" {
   vpc_endpoint_type   = "Interface"
   private_dns_enabled = true
 
-  subnet_ids = [aws_subnet.private_a.id, aws_subnet.private_b.id]
+  subnet_ids = [
+    aws_subnet.private_a.id,
+    # aws_subnet.private_b.id
+  ]
 
   security_group_ids = [
     aws_security_group.endpoint_access.id
@@ -109,31 +115,37 @@ resource "aws_vpc_endpoint" "cloudwatch_logs" {
   vpc_endpoint_type   = "Interface"
   private_dns_enabled = true
 
-  subnet_ids = [aws_subnet.private_a.id, aws_subnet.private_b.id]
+  subnet_ids = [
+    aws_subnet.private_a.id,
+    # aws_subnet.private_b.id
+  ]
 
   security_group_ids = [
     aws_security_group.endpoint_access.id
   ]
 }
 
-# resource "aws_vpc_endpoint" "ssm" {
-#   vpc_id              = aws_vpc.main.id
-#   service_name        = "com.amazonaws.${data.aws_region.current.name}.ssmmessages"
-#   vpc_endpoint_type   = "Interface"
-#   private_dns_enabled = true
+resource "aws_vpc_endpoint" "ssm" {
+  vpc_id              = aws_vpc.main.id
+  service_name        = "com.amazonaws.${data.aws_region.current.name}.ssmmessages"
+  vpc_endpoint_type   = "Interface"
+  private_dns_enabled = true
 
-#   subnet_ids = [aws_subnet.private_a.id, aws_subnet.private_b.id]
+  subnet_ids = [
+    aws_subnet.private_a.id,
+    # aws_subnet.private_b.id
+  ]
 
-#   security_group_ids = [
-#     aws_security_group.endpoint_access.id
-#   ]
-# }
+  security_group_ids = [
+    aws_security_group.endpoint_access.id
+  ]
+}
 
-# resource "aws_vpc_endpoint" "s3" {
-#   vpc_id            = aws_vpc.main.id
-#   service_name      = "com.amazonaws.${data.aws_region.current.name}.s3"
-#   vpc_endpoint_type = "Gateway"
-#   route_table_ids = [
-#     aws_vpc.main.default_route_table_id
-#   ]
-# }
+resource "aws_vpc_endpoint" "s3" {
+  vpc_id            = aws_vpc.main.id
+  service_name      = "com.amazonaws.${data.aws_region.current.name}.s3"
+  vpc_endpoint_type = "Gateway"
+  route_table_ids = [
+    aws_vpc.main.default_route_table_id
+  ]
+}

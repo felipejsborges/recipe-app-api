@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 import os
 from pathlib import Path
+from socket import gethostbyname, gethostname
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -27,12 +28,15 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY") or "changeme"
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = ENVIRONMENT == "dev"
 
-ALLOWED_HOSTS = tuple(
+ALLOWED_HOSTS = list(
     filter(
         None,
         (os.environ.get("DJANGO_ALLOWED_HOSTS") or "127.0.0.1").split(","),
     )
 )
+if os.environ.get("AWS_EXECUTION_ENV"):  # will be true if running on AWS services
+    # This allows the target group health check to make requests to our application
+    ALLOWED_HOSTS.append(gethostbyname(gethostname()))
 
 # Application definition
 
