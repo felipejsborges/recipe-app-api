@@ -179,13 +179,13 @@ resource "aws_vpc_security_group_egress_rule" "rds_private_a" {
   to_port           = 5432
 }
 
-# resource "aws_vpc_security_group_egress_rule" "rds_private_b" {
-#   security_group_id = aws_security_group.ecs_service.id
-#   cidr_ipv4         = aws_subnet.private_b.cidr_block
-#   ip_protocol       = "tcp"
-#   from_port         = 5432
-#   to_port           = 5432
-# }
+resource "aws_vpc_security_group_egress_rule" "rds_private_b" {
+  security_group_id = aws_security_group.ecs_service.id
+  cidr_ipv4         = aws_subnet.private_b.cidr_block
+  ip_protocol       = "tcp"
+  from_port         = 5432
+  to_port           = 5432
+}
 
 resource "aws_ecs_service" "api" {
   name                   = "${local.prefix}-api"
@@ -199,7 +199,7 @@ resource "aws_ecs_service" "api" {
   network_configuration {
     subnets = [
       aws_subnet.private_a.id,
-      # aws_subnet.private_b.id
+      aws_subnet.private_b.id
     ]
 
     security_groups = [aws_security_group.ecs_service.id]

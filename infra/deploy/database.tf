@@ -6,7 +6,7 @@ resource "aws_db_subnet_group" "main" {
   name = "${local.prefix}-main"
   subnet_ids = [
     aws_subnet.private_a.id,
-    # aws_subnet.private_b.id
+    aws_subnet.private_b.id
   ]
 }
 
