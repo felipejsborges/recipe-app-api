@@ -118,6 +118,7 @@ data "aws_iam_policy_document" "ec2" {
       "ec2:DeleteVpcEndpoints",
       "ec2:DescribeInternetGateways",
       "ec2:DescribeNetworkAcls",
+      "ec2:DescribeNetworkInterfaceAttribute",
       "ec2:DescribeNetworkInterfaces",
       "ec2:DescribePrefixLists",
       "ec2:DescribeRouteTables",
