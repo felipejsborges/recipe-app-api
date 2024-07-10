@@ -57,6 +57,20 @@ resource "aws_ecs_task_definition" "api" {
     name = "static"
   }
 
+  volume {
+    name = "efs-media"
+
+    efs_volume_configuration {
+      file_system_id     = aws_efs_file_system.media.id
+      transit_encryption = "ENABLED"
+
+      authorization_config {
+        access_point_id = aws_efs_access_point.media.id
+        iam             = "DISABLED"
+      }
+    }
+  }
+
   runtime_platform {
     operating_system_family = "LINUX"
   }
@@ -100,6 +114,11 @@ resource "aws_ecs_task_definition" "api" {
             readOnly      = false
             containerPath = "/vol/web/static"
             sourceVolume  = "static"
+          },
+          {
+            readOnly      = false
+            containerPath = "/vol/web/media"
+            sourceVolume  = "efs-media"
           }
         ]
         logConfiguration = {
@@ -134,6 +153,11 @@ resource "aws_ecs_task_definition" "api" {
             readOnly      = true
             containerPath = "/vol/static"
             sourceVolume  = "static"
+          },
+          {
+            readOnly      = true
+            containerPath = "/vol/media"
+            sourceVolume  = "efs-media"
           }
         ]
         logConfiguration = {
@@ -185,6 +209,22 @@ resource "aws_vpc_security_group_egress_rule" "rds_private_b" {
   ip_protocol       = "tcp"
   from_port         = 5432
   to_port           = 5432
+}
+
+resource "aws_vpc_security_group_egress_rule" "from_ecs_to_efs_a" {
+  security_group_id = aws_security_group.ecs_service.id
+  cidr_ipv4         = aws_subnet.private_a.cidr_block
+  ip_protocol       = "tcp"
+  from_port         = 2049
+  to_port           = 2049
+}
+
+resource "aws_vpc_security_group_egress_rule" "from_ecs_to_efs_b" {
+  security_group_id = aws_security_group.ecs_service.id
+  cidr_ipv4         = aws_subnet.private_b.cidr_block
+  ip_protocol       = "tcp"
+  from_port         = 2049
+  to_port           = 2049
 }
 
 resource "aws_ecs_service" "api" {
