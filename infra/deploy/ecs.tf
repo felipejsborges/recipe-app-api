@@ -106,7 +106,7 @@ resource "aws_ecs_task_definition" "api" {
           },
           {
             name  = "DJANGO_ALLOWED_HOSTS"
-            value = "*" # TODO: Change to domain name
+            value = aws_route53_record.app.fqdn
           }
         ]
         mountPoints = [
